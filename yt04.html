@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // show main form
+    if (videoId() == ''){
+        document.querySelector('#mainForm').style.display = 'block';
+    }
+});
+
+function isSmartPhone() {
+  if (navigator.userAgent.match(/iPhone|Android.+Mobile/)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+// isMirror
+// playbackRate
+// fromTo
+function buildShareLink(){
+    const url = new URL(window.location);
+    if(document.querySelector("#player").style.WebkitTransform > ''){
+       url.searchParams.append('isMirror', 1);
+    }
+    if(player.getPlaybackRate() != 1){
+        url.searchParams.append('playbackRate',player.getPlaybackRate());
+    }
+    const fromTo = document.forms['loopBetweenForm'].fromTo.value;
+    if(fromTo > ''){
+        url.searchParams.append('fromTo',fromTo);
+    }
+    return url.href;
+}
+function saveToURL(){
+    window.location.href = buildShareLink();
+}
+// isMirror
+// playbackRate
+// fromTo
+function restorePlayParams(){
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('isMirror')){
+        let st = document.querySelector("#player").style.WebkitTransform = "scaleX(-1)";
+    }    
+    if (searchParams.get('playbackRate')){
+        player.setPlaybackRate(parseFloat(searchParams.get('playbackRate')));
+    }
+    if (searchParams.get('fromTo')){
+        document.forms['loopBetweenForm'].fromTo.value = searchParams.get('fromTo');
+        loopBetween(searchParams.get('fromTo'));
+    }
+}
+
+function youtubeURL(){
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get('url');
+}
+
+function videoId(){
+    const url = youtubeURL();
+    if (!url){
+        return '';
+    }
+    if(url.split('?').length < 2){
+        return '';
+    }
+    const searchParams = new URLSearchParams(url.split('?')[1]);
+    return searchParams.get('v');
+}
+
+function fullScreen(){
+    player.setSize(document.body.clientWidth,document.body.clientHeight);
+    //hide address bar
+    if (isSmartPhone()){
+        setTimeout(function(){ window.scrollTo(0,1); } , 500);
+    }else{
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function dubugCurrentTime()
+{
+    if (!currentTime){
+        var currentTime = document.getElementById('currentTime');
+    }   
+    currentTime.innerText = Math.round(player.getCurrentTime() * 100)  / 100;
+}
+
+function changeSpeed(){
+    currentRate = player.getPlaybackRate();
+    if (currentRate == 1){
+        player.setPlaybackRate(0.75);    
+    }else if(currentRate == 0.75){
+        player.setPlaybackRate(0.5);    
+    }else{
+        player.setPlaybackRate(1);    
+    }
+}
+
+function mirrorImage()
+{
+    let st = document.querySelector("#player").style;
+    if(st.WebkitTransform){
+        st.WebkitTransform = "";
+    }else{
+        st.WebkitTransform = "scaleX(-1)";
+    }
+}
+
+loopIntervalId = 0;
+function loopBetween(fromTo){
+    let fields = fromTo.split("-")
+    if( fields.length != 2){
+        alert("12-50 のような形式で開始秒数と終了秒数を入れてください");
+        return false;
+    }
+    let from = Number(fields[0]);
+    let to   = Number(fields[1]);
+    clearInterval(loopIntervalId);
+    loopIntervalId = setInterval(
+        ()=>{
+            if(player.getCurrentTime() < from){
+                player.seekTo(from);
+            }      
+            if(player.getCurrentTime() >= to){
+                player.seekTo(from);
+            }      
+        }
+        ,10
+    );
+}
+
+</script>
+<body style="margin:0px;padding:0px">
+
+<div class="main" style="text-align: center;height: 100vh;">
+    
+    <div id="mainForm" style="display:none;font-size: 200%;">
+        <p>input youtube video url</p>
+        <form action="yt04.html" autocomplete="on">
+            <input type="text" class="url" name="url" size="30" autocomplete="on"> 
+            <button type="submit">GO</button><br>
+        </form>
+    </div>
+    
+    <div id="player"></div>
+    <script>
+      if(videoId()){
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+            videoId: videoId(),
+            events: {
+                'onReady': onPlayerReady
+            }
+            });
+        }
+        }
+      function onPlayerReady(event) {
+        fullScreen();
+        window.addEventListener('resize', fullScreen);
+        setInterval('dubugCurrentTime()',100);
+        restorePlayParams();
+      }
+    </script>
+</div>
+
+<div style="position:fixed;top: 10px;left:80%;width:20%;margin:10px;">
+    <p>
+      <span id="currentTime" style="font-size: 150%;color:azure;background-color:black;opacity:0.6">0.0</span>
+    </p>
+    <p>
+        <button onclick="mirrorImage()">mirror</button>
+    </p>
+    <p>
+        <button onclick="changeSpeed()">speed</button>
+    </p>
+                        
+    <p>
+        <form name="loopBetweenForm" onsubmit="loopBetween(this.fromTo.value);return false;" autocomplete="on">
+            <button type="submit">repeat from-to</button><br>
+            <input type="text" name="fromTo" size="10" autocomplete="on" placeholder="ex. 10-25"> 
+        </form>
+    </p>
+    <p>
+        <button onclick="saveToURL()">save to url</button>
+    </p>
+</div>
+
+</body>
+</html>
