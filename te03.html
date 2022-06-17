@@ -17,7 +17,7 @@ function dubugCurrentTime()
     if (!currentTime){
         var currentTime = document.getElementById('currentTime');
     }   
-    currentTime.innerText = MOVIE.currentTime;
+    currentTime.innerText = Math.round(MOVIE.currentTime * 100) / 100 ;
 }
 function slowVideo(){
     MOVIE.playbackRate = 0.5;
@@ -58,7 +58,7 @@ function loopBetween(from_to){
 <tr>
 <td width="500px">        
 
-<video id="v" controls height="500px">
+<video id="v" controls height="700px">
 <source src="momo.webm"
     type="video/webm">
 </video>
