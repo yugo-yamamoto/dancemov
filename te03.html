@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    MOVIE = document.getElementById('v');
+});
+function playMovie(){
+    MOVIE.play();
+    setInterval('dubugCurrentTime()',100);
+}
+function mirrorImage()
+{
+    MOVIE.style.WebkitTransform ="scaleX(-1)";
+}
+
+function dubugCurrentTime()
+{
+    if (!currentTime){
+        var currentTime = document.getElementById('currentTime');
+    }   
+    currentTime.innerText = MOVIE.currentTime;
+}
+function slowVideo(){
+    MOVIE.playbackRate = 0.5;
+}
+
+function seek(seekTime){
+    console.log(seekTime);
+    let t = Number(seekTime);
+    MOVIE.currentTime = t;
+}
+loopIntervalId = 0;
+function loopBetween(from_to){
+    console.log(from_to);
+    let fields = from_to.split("-")
+    if( fields.length != 2){
+        alert("12-50 のような形式で開始秒数と終了秒数を入れてください");
+        return false;
+    }
+    let from = Number(fields[0]);
+    let to   = Number(fields[1]);
+    clearInterval(loopIntervalId);
+    loopIntervalId = setInterval(
+        ()=>{
+            if(MOVIE.currentTime >= to){
+                MOVIE.currentTime = from;
+            }      
+        }
+        ,10
+    );
+    console.log(loopIntervalId);
+}
+</script>
+
+<div class="main" style="text-align: center;">
+
+<table border="1" style="width:100% ;">
+
+<tr>
+<td width="500px">        
+
+<video id="v" controls height="500px">
+<source src="momo.webm"
+    type="video/webm">
+</video>
+
+</td>
+<td width="450px">
+<p>
+<div id="currentTime"></div>
+</p>
+<p>
+<button onclick="playMovie()">再生する</button>
+</p>
+<p>
+<button onclick="mirrorImage()">反転する</button>
+</p>
+
+<p>
+<button onclick="slowVideo()">ゆっくりにする</button>
+</p>
+
+<p>
+   <form onsubmit="seek(this.seekTime.value);return false;">
+    <button type="submit">この時間に移動</button><br>
+        <input type="number" id="seekTime" name="seekTime">
+    </form>
+</p>
+
+<p>
+    <form onsubmit="loopBetween(this.from_to.value);return false;" autocomplete="on">
+        <button type="submit">この時間の間は繰り返し(ex. 10-25)</button><br>
+    <input type="text" id="from_to" name="from_to" size="20" autocomplete="on"> 
+    </form>
+</p>
+
+</td>
+</tr>
+
+</table>
+</div>

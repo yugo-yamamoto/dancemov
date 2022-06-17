@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    MOVIE = document.getElementById('v');
+});
+function playMovie(){
+    MOVIE.play();
+    setInterval('dubugCurrentTime()',100);
+}
+function mirrorImage()
+{
+    MOVIE.style.WebkitTransform ="scaleX(-1)";
+}
+
+function dubugCurrentTime()
+{
+    if (!currentTime){
+        var currentTime = document.getElementById('currentTime');
+    }   
+    currentTime.innerText = MOVIE.currentTime;
+}
+function slowVideo(){
+    MOVIE.playbackRate = 0.5;
+}
+
+function seek(){
+    let t = Number(document.getElementById("seekTime").value);
+    MOVIE.currentTime = t;
+}
+loopIntervalId = 0;
+function loopBetweenButton(){
+    let from = Number(document.getElementById("fromTime").value);
+    let to   = Number(document.getElementById("toTime").value);
+    clearInterval(loopIntervalId);
+    loopIntervalId = setInterval(
+        ()=>{
+            if(MOVIE.currentTime >= to){
+                MOVIE.currentTime = from;
+            }      
+        }
+        ,10
+    );
+    console.log(loopIntervalId);
+}
+</script>
+
+<div class="main" style="text-align: center;">
+
+<table border="1" style="width:800px ;">
+
+    <tr><td width="400px">        
+
+<video id="v" controls height="400px">
+<source src="momo.webm"
+    type="video/webm">
+</video>
+
+</td>
+<td width="200px">
+    <div id="currentTime"></div>
+</td>
+<td width="350px">
+<p>
+<button onclick="playMovie()">再生する</button>
+</p>
+<p>
+<button onclick="mirrorImage()">反転する</button>
+</p>
+
+<p>
+<button onclick="slowVideo()">ゆっくりにする</button>
+</p>
+
+<p>
+    <button onclick="seek()">この時間に移動</button><br>
+    <input type="text" id="seekTime">
+</p>
+
+<p>
+    <button onclick="loopBetweenButton()">この時間の間は繰り返し</button><br>
+    <input type="text" id="fromTime" size="10">-<input type="text" id="toTime" size="10"> 
+</p>
+
+</td>
+</tr>
+
+</table>
+</div>
